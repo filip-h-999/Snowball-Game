@@ -16,6 +16,7 @@ ball_image = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\snowba
 back = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\back2.png"), (742, 468))
 image_right = pygame.transform.rotate(ball_image, 90)
 image_left = pygame.transform.rotate(ball_image, -90)
+PLAYER_SPEED = 5.5
 
 BLACK = (0, 0, 0)
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -25,8 +26,10 @@ running = True
 speed = 60
 clock = pygame.time.Clock()
 
-pygame.time.set_timer(pygame.USEREVENT, 100)
-counter = 1
+timerSpeed = 650
+FALL = pygame.USEREVENT + 1
+FALLING_EVENT = pygame.event.Event(FALL)
+pygame.time.set_timer(FALLING_EVENT, 1000, 1)
 
 
 class Stone:
@@ -44,6 +47,21 @@ class Stone:
         self.y += self.stoneSpeed
 
 
+class SnowBall:
+    SNOWBALL_WIDTH = 20
+    SNOWBALL_HEIGHT = 20
+    snowball_image = image.load(r"C:\Users\filip\Downloads\snowball.png")
+    sn = pygame.transform.scale(snowball_image, (SNOWBALL_WIDTH, SNOWBALL_HEIGHT))
+
+    def __init__(self):
+        self.x = random.randrange(0, 690)
+        self.stoneSpeed = random.randrange(1, 3)
+        self.y = -5
+
+    def snowFalling(self):
+        self.y += self.stoneSpeed
+
+
 class Direction(Enum):
     left = 1
     right = 2
@@ -56,19 +74,23 @@ direction = Direction.none
 def main():
     global running
     stones = []
+    snowB = []
     pygame.init()
     pygame.display.set_caption("Snowball Game")
 
     while running:
-        global direction, counter
+        global direction, timerSpeed
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.USEREVENT:
-                counter -= 1
-                if counter == 0:
-                    stones.append(Stone())
-                    counter = 3
+            if event == FALLING_EVENT:
+                stones.append(Stone())
+                snowB.append(SnowBall())
+                timerSpeed -= 1
+                pygame.time.set_timer(FALLING_EVENT, timerSpeed, 1)
+                if timerSpeed < 100:
+                    timerSpeed = 100
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     direction = Direction.left
@@ -79,31 +101,40 @@ def main():
                     direction = Direction.none
 
         window.blit(back, (0, 0))
-        ball()
-        stones2(stones)
+        player()
+        enemyStone(stones)
+        snowballs(snowB)
         moveBall(direction)
         pygame.display.update()
         clock.tick(speed)
 
 
-def ball():
+def player():
     window.blit(ball_image, (BALL_X_POSITION, BALL_Y_POSITION))
 
 
 def moveBall(dire):
     global BALL_Y_POSITION, BALL_X_POSITION
     if dire == Direction.left:
-        BALL_X_POSITION -= 3
+        BALL_X_POSITION -= PLAYER_SPEED
     elif dire == Direction.right:
-        BALL_X_POSITION += 3
+        BALL_X_POSITION += PLAYER_SPEED
 
 
-def stones2(stones: list[Stone]):
+def enemyStone(stones: list[Stone]):
     for kamen in stones:
         window.blit(kamen.st, (kamen.x, kamen.y))
         kamen.stoneFalling()
         if kamen.y > 310:
             stones.remove(kamen)
+
+
+def snowballs(snowB: list[SnowBall]):
+    for snow in snowB:
+        window.blit(snow.sn, (snow.x, snow.y))
+        snow.snowFalling()
+        if snow.y > 310:
+            snowB.remove(snow)
 
 
 main()
