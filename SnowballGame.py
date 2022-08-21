@@ -12,6 +12,7 @@ BALL_HEIGHT = 55
 BALL_X_POSITION = 355
 BALL_Y_POSITION = 295
 
+start_screen = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\startscreen.png"), (742, 468))
 ball_image = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\snowball.png"), (BALL_WIDTH, BALL_HEIGHT))
 back = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\back2.png"), (742, 468))
 image_right = pygame.transform.rotate(ball_image, 90)
@@ -22,6 +23,7 @@ BLACK = (0, 0, 0)
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
 running = True
+gameStarted = False
 
 speed = 60
 clock = pygame.time.Clock()
@@ -29,7 +31,6 @@ clock = pygame.time.Clock()
 timerSpeed = 650
 FALL = pygame.USEREVENT + 1
 FALLING_EVENT = pygame.event.Event(FALL)
-pygame.time.set_timer(FALLING_EVENT, 1000, 1)
 
 
 class Stone:
@@ -79,11 +80,11 @@ def main():
     pygame.display.set_caption("Snowball Game")
 
     while running:
-        global direction, timerSpeed
+        global direction, timerSpeed, gameStarted
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event == FALLING_EVENT:
+            if event == FALLING_EVENT and gameStarted:
                 stones.append(Stone())
                 snowB.append(SnowBall())
                 timerSpeed -= 1
@@ -92,6 +93,9 @@ def main():
                     timerSpeed = 100
 
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    pygame.time.set_timer(FALLING_EVENT, 1000, 1)
+                    gameStarted = True
                 if event.key == pygame.K_LEFT:
                     direction = Direction.left
                 if event.key == pygame.K_RIGHT:
@@ -100,11 +104,16 @@ def main():
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     direction = Direction.none
 
-        window.blit(back, (0, 0))
-        player()
-        enemyStone(stones)
-        snowballs(snowB)
-        moveBall(direction)
+        if not gameStarted:
+            window.blit(start_screen, (0, 0))
+
+        if gameStarted:
+            window.blit(back, (0, 0))
+            player()
+            enemyStone(stones)
+            snowballs(snowB)
+            moveBall(direction)
+
         pygame.display.update()
         clock.tick(speed)
 
