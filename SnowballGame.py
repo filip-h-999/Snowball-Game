@@ -91,7 +91,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event == FALLING_EVENT and gameStarted:
+            if event == FALLING_EVENT and gameStarted and not gameOver:
                 stones.append(Stone())
                 snowB.append(SnowBall())
                 timerSpeed -= 1
@@ -103,6 +103,12 @@ def main():
                 if event.key == pygame.K_p:
                     pygame.time.set_timer(FALLING_EVENT, 1000, 1)
                     gameStarted = True
+                if event.key == pygame.K_n:
+                    running = False
+                if event.key == pygame.K_c:
+                    gameOver = False
+                    gameStarted = True
+                    pygame.time.set_timer(FALLING_EVENT, 1000, 1)
                 if event.key == pygame.K_LEFT:
                     direction = Direction.left
                 if event.key == pygame.K_RIGHT:
@@ -114,11 +120,11 @@ def main():
         if not gameStarted:
             window.blit(start_screen, (0, 0))
 
-        if gameStarted:
+        if gameStarted and not gameOver:
             window.blit(back, (0, 0))
             player()
             enemyStone(stones)
-            dead(stones)
+            dead(snowB, stones)
             snowballs(snowB)
             moveBall(direction)
 
@@ -161,13 +167,16 @@ def snowballs(snowB: list[SnowBall]):
             snowB.remove(snow)
 
 
-def dead(stones: list[Stone]):
+def dead(snowB: list[SnowBall], stones: list[Stone]):
     global gameOver
     pygame.draw.rect(window, BLACK, playerRect, 5)
     for kamen in stones:
         pygame.draw.rect(window, BLACK, kamen.stoneRect, 1)
         if playerRect.colliderect(kamen.stoneRect):
             gameOver = True
+            stones.clear()
+            snowB.clear()
+            break
 
 
 main()
