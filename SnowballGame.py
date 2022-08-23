@@ -3,9 +3,11 @@ from enum import Enum
 import pygame
 from pygame import image
 
-
 WINDOW_WIDTH = 742
 WINDOW_HEIGHT = 428
+window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+
+BLACK = 0, 0, 0
 
 BALL_WIDTH = 55
 BALL_HEIGHT = 55
@@ -13,17 +15,19 @@ BALL_X_POSITION = 355
 BALL_Y_POSITION = 295
 
 start_screen = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\startscreen.png"), (742, 468))
-ball_image = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\snowball.png"), (BALL_WIDTH, BALL_HEIGHT))
-back = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\back2.png"), (742, 468))
-image_right = pygame.transform.rotate(ball_image, 90)
-image_left = pygame.transform.rotate(ball_image, -90)
-PLAYER_SPEED = 5.5
+game_over_screen = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\gameOver.png"), (742, 468))
 
-BLACK = (0, 0, 0)
-window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+ball_image = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\snowball.png"), (BALL_WIDTH, BALL_HEIGHT))
+playerRect = ball_image.get_rect()
+playerRect.x = 355
+playerRect.y = 295
+
+back = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\back2.png"), (742, 468))
+PLAYER_SPEED = 5.5
 
 running = True
 gameStarted = False
+gameOver = False
 
 speed = 60
 clock = pygame.time.Clock()
@@ -40,12 +44,15 @@ class Stone:
     st = pygame.transform.scale(stone_image, (STONE_WIDTH, STONE_HEIGHT))
 
     def __init__(self):
-        self.x = random.randrange(0, 690)
+        self.stonePositionX = random.randrange(0, 690)
         self.stoneSpeed = random.randrange(1, 3)
-        self.y = -5
+        self.stonePositionY = -5
+        self.stoneRect = self.st.get_rect()
 
     def stoneFalling(self):
-        self.y += self.stoneSpeed
+        self.stonePositionY += self.stoneSpeed
+        self.stoneRect.y = self.stonePositionY
+        self.stoneRect.x = self.stonePositionX
 
 
 class SnowBall:
@@ -80,7 +87,7 @@ def main():
     pygame.display.set_caption("Snowball Game")
 
     while running:
-        global direction, timerSpeed, gameStarted
+        global direction, timerSpeed, gameStarted, gameOver
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -111,30 +118,38 @@ def main():
             window.blit(back, (0, 0))
             player()
             enemyStone(stones)
+            dead(stones)
             snowballs(snowB)
             moveBall(direction)
+
+        if gameOver:
+            window.blit(game_over_screen, (0, 0))
 
         pygame.display.update()
         clock.tick(speed)
 
 
 def player():
-    window.blit(ball_image, (BALL_X_POSITION, BALL_Y_POSITION))
+    # window.blit(ball_image, (BALL_X_POSITION, BALL_Y_POSITION))
+    window.blit(ball_image, playerRect)
+    # pygame.draw.rect(window, BLACK, playerRect, 5)
 
 
 def moveBall(dire):
     global BALL_Y_POSITION, BALL_X_POSITION
     if dire == Direction.left:
         BALL_X_POSITION -= PLAYER_SPEED
+        playerRect.x -= PLAYER_SPEED
     elif dire == Direction.right:
         BALL_X_POSITION += PLAYER_SPEED
+        playerRect.x += PLAYER_SPEED
 
 
 def enemyStone(stones: list[Stone]):
     for kamen in stones:
-        window.blit(kamen.st, (kamen.x, kamen.y))
+        window.blit(kamen.st, (kamen.stonePositionX, kamen.stonePositionY))
         kamen.stoneFalling()
-        if kamen.y > 310:
+        if kamen.stonePositionY > 310:
             stones.remove(kamen)
 
 
@@ -144,6 +159,15 @@ def snowballs(snowB: list[SnowBall]):
         snow.snowFalling()
         if snow.y > 310:
             snowB.remove(snow)
+
+
+def dead(stones: list[Stone]):
+    global gameOver
+    pygame.draw.rect(window, BLACK, playerRect, 5)
+    for kamen in stones:
+        pygame.draw.rect(window, BLACK, kamen.stoneRect, 1)
+        if playerRect.colliderect(kamen.stoneRect):
+            gameOver = True
 
 
 main()
