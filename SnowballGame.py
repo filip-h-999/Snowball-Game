@@ -8,20 +8,10 @@ WINDOW_HEIGHT = 428
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
 BLACK = 0, 0, 0
-
-BALL_WIDTH = 55
-BALL_HEIGHT = 55
-# BALL_X_POSITION = 355
-# BALL_Y_POSITION = 295
+RED = 255, 0, 0
 
 start_screen = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\startscreen.png"), (742, 468))
 game_over_screen = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\gameOver.png"), (742, 468))
-
-ball_image = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\snowball.png"), (BALL_WIDTH, BALL_HEIGHT))
-ball_image_origin = ball_image
-playerRect = ball_image.get_rect()
-playerRect.x = 355
-playerRect.y = 295
 
 back = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\back2.png"), (742, 468))
 PLAYER_SPEED = 5.5
@@ -37,6 +27,51 @@ clock = pygame.time.Clock()
 timerSpeed = 650
 FALL = pygame.USEREVENT + 1
 FALLING_EVENT = pygame.event.Event(FALL)
+
+
+class Player:
+    def __init__(self):
+        self.BALL_WIDTH = 55
+        self.BALL_HEIGHT = 55
+        self.ball_image = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\snowball.png"),
+                                                 (self.BALL_WIDTH, self.BALL_HEIGHT))
+        self.ball_image_origin = self.ball_image
+        self.rect = self.ball_image.get_rect()
+        self.rect.x = 355
+        self.rect.y = 295
+        self.collisionRect = self.rect.inflate(-15, -15)
+
+    def drawPlayer(self):
+        window.blit(self.ball_image, self.rect)
+        # pygame.draw.rect(window, BLACK, self.rect, 2)
+        pygame.draw.rect(window, RED, self.collisionRect, 2)
+
+    def moveBall(self, dire):
+        if dire == Direction.left:
+            self.rect.x -= PLAYER_SPEED
+        elif dire == Direction.right:
+            self.rect.x += PLAYER_SPEED
+        self.collisionRect = self.rect.inflate(-15, -15)
+
+    def inflate(self, size):
+        self.BALL_WIDTH += size
+        self.BALL_HEIGHT += size
+        self.rect.y -= size/2
+        self.rect.x += size/2
+        self.ball_image = pygame.transform.scale(self.ball_image_origin, (self.BALL_WIDTH, self.BALL_HEIGHT))
+        self.rect.inflate_ip(size, size)
+        self.collisionRect = self.rect.inflate(-15, -15)
+
+    def teleportBorder(self):
+        borderLeft = pygame.draw.rect(window, BLACK, pygame.Rect(-59, 0, 60, 600))
+        borderRight = pygame.draw.rect(window, BLACK, pygame.Rect(741, 0, 60, 600))
+        if self.rect.colliderect(borderLeft):
+            self.rect.x = 685
+        if self.rect.colliderect(borderRight):
+            self.rect.x = 5
+
+    def isDead(self):
+        return self.BALL_WIDTH == 23
 
 
 class Stone:
@@ -90,9 +125,10 @@ def main():
     snowB = []
     pygame.init()
     pygame.display.set_caption("Snowball Game")
+    player = Player()
 
     while running:
-        global direction, timerSpeed, gameStarted, gameOver, score, BALL_WIDTH, BALL_HEIGHT, ball_image
+        global direction, timerSpeed, gameStarted, gameOver, score
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -100,11 +136,7 @@ def main():
                 stones.append(Stone())
                 snowB.append(SnowBall())
                 timerSpeed -= 1
-                BALL_WIDTH -= 2
-                BALL_HEIGHT -= 2
-                playerRect.x += 2
-                playerRect.y += 2
-                ball_image = pygame.transform.scale(ball_image_origin, (BALL_WIDTH, BALL_HEIGHT))
+                player.inflate(-2)
                 pygame.time.set_timer(FALLING_EVENT, timerSpeed, 1)
                 if timerSpeed < 100:
                     timerSpeed = 100
@@ -116,7 +148,7 @@ def main():
                 if event.key == pygame.K_n and gameOver:
                     running = False
                 if event.key == pygame.K_c and gameOver:
-                    restart()
+                    player = restart()
 
                 if event.key == pygame.K_LEFT:
                     direction = Direction.left
@@ -131,13 +163,13 @@ def main():
 
         if gameStarted and not gameOver:
             window.blit(back, (0, 0))
-            teleportBorder()
+            player.teleportBorder()
             scoreCounter()
-            player()
+            player.drawPlayer()
             enemyStone(stones)
-            dead(snowB, stones)
-            snowballs(snowB)
-            moveBall(direction)
+            dead(snowB, stones, player)
+            snowballs(snowB, player)
+            player.moveBall(direction)
 
         if gameOver:
             window.blit(game_over_screen, (0, 0))
@@ -145,58 +177,41 @@ def main():
             gameScore = font1.render("Score: %d" % score, True, BLACK)
             window.blit(gameScore, (310, 332))
 
-        if BALL_WIDTH == 23:
+        if player.isDead():
             gameOver = True
 
         pygame.display.update()
         clock.tick(speed)
 
 
-def player():
-    # window.blit(ball_image, (BALL_X_POSITION, BALL_Y_POSITION))
-    window.blit(ball_image, playerRect)
-    pygame.draw.rect(window, BLACK, playerRect, 5)
-
-
-def moveBall(dire):
-    if dire == Direction.left:
-        # BALL_X_POSITION -= PLAYER_SPEED
-        playerRect.x -= PLAYER_SPEED
-    elif dire == Direction.right:
-        # BALL_X_POSITION += PLAYER_SPEED
-        playerRect.x += PLAYER_SPEED
-
-
 def enemyStone(stones: list[Stone]):
     for kamen in stones:
+        # draw kamen funktia
+        pygame.draw.rect(window, BLACK, kamen.stoneRect, 1)
         window.blit(kamen.st, (kamen.stonePositionX, kamen.stonePositionY))
         kamen.stoneFalling()
         if kamen.stonePositionY > 310:
             stones.remove(kamen)
 
 
-def snowballs(snowB: list[SnowBall]):
-    global BALL_WIDTH, BALL_HEIGHT, ball_image
+def snowballs(snowB: list[SnowBall], pl: Player):
     for snow in snowB:
-        # pygame.draw.rect(window, BLACK, snow.snowBallRect, 1)
+        pygame.draw.rect(window, BLACK, snow.snowBallRect, 1)
         window.blit(snow.sn, (snow.snowballPositionX, snow.snowballPositionY))
         snow.snowFalling()
         if snow.snowballPositionY > 310:
             snowB.remove(snow)
-        if playerRect.colliderect(snow.snowBallRect):
-            BALL_WIDTH += 5
-            BALL_HEIGHT += 5
-            playerRect.y -= 5
-            ball_image = pygame.transform.scale(ball_image, (BALL_WIDTH, BALL_HEIGHT))
+        if pl.collisionRect.colliderect(snow.snowBallRect):
+            pl.inflate(5)
             snowB.remove(snow)
 
 
-def dead(snowB: list[SnowBall], stones: list[Stone]):
+def dead(snowB: list[SnowBall], stones: list[Stone], pl: Player):
     global gameOver
     # pygame.draw.rect(window, BLACK, playerRect, 5)
     for kamen in stones:
         # pygame.draw.rect(window, BLACK, kamen.stoneRect, 1)
-        if playerRect.colliderect(kamen.stoneRect):
+        if pl.collisionRect.colliderect(kamen.stoneRect):
             gameOver = True
             stones.clear()
             snowB.clear()
@@ -210,26 +225,13 @@ def scoreCounter():
     window.blit(gameScore, (10, 10))
 
 
-def teleportBorder():
-    borderLeft = pygame.draw.rect(window, BLACK, pygame.Rect(-59, 0, 60, 600))
-    borderRight = pygame.draw.rect(window, BLACK, pygame.Rect(741, 0, 60, 600))
-    if playerRect.colliderect(borderLeft):
-        playerRect.x = 685
-    if playerRect.colliderect(borderRight):
-        playerRect.x = 5
-
-
 def restart():
-    global gameOver, gameStarted, score, BALL_WIDTH, BALL_HEIGHT, ball_image
+    global gameOver, gameStarted, score
     gameOver = False
     gameStarted = True
     score = 0
-    BALL_WIDTH = 55
-    BALL_HEIGHT = 55
-    playerRect.y = 295
-    playerRect.x = 355
-    ball_image = pygame.transform.scale(ball_image_origin, (BALL_WIDTH, BALL_HEIGHT))
     pygame.time.set_timer(FALLING_EVENT, 1000, 1)
+    return Player()
 
 
 main()
