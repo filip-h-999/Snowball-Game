@@ -39,18 +39,13 @@ def main():
 
     def enemyStone():
         for kamen in stones:
-            # todo draw kamen function
-            pygame.draw.rect(window, BLACK, kamen.stoneRect, 1)
-            window.blit(kamen.st, (kamen.stonePositionX, kamen.stonePositionY))
-            kamen.stoneFalling()
+            kamen.drawStone()
             if kamen.stonePositionY > 310:
                 stones.remove(kamen)
 
     def snowballs():
         for snow in snowB:
-            pygame.draw.rect(window, BLACK, snow.snowBallRect, 1)
-            window.blit(snow.sn, (snow.snowballPositionX, snow.snowballPositionY))
-            snow.snowFalling()
+            snow.drawSnowBall()
             if snow.snowballPositionY > 310:
                 snowB.remove(snow)
             if player.collisionRect.colliderect(snow.snowBallRect):
@@ -85,8 +80,8 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             if event == FALLING_EVENT and gameStarted and not gameOver:
-                stones.append(Stone())
-                snowB.append(SnowBall())
+                stones.append(Stone(window))
+                snowB.append(SnowBall(window))
                 timerSpeed -= 1
                 player.inflate(-2)
                 pygame.time.set_timer(FALLING_EVENT, timerSpeed, 1)
