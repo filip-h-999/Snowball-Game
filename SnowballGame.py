@@ -49,7 +49,7 @@ def main():
             if snow.snowballPositionY > 310:
                 snowB.remove(snow)
             if player.collisionRect.colliderect(snow.snowBallRect):
-                player.inflate(5)
+                player.inflate(3 * snow.snSize)
                 snowB.remove(snow)
 
     def dead():
@@ -71,6 +71,8 @@ def main():
         gameOver = False
         gameStarted = True
         score = 0
+        stones.clear()
+        snowB.clear()
         pygame.time.set_timer(FALLING_EVENT, 1000, 1)
         return Player(window)
 

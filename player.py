@@ -23,7 +23,7 @@ class Player:
     def drawPlayer(self):
         self.window.blit(self.ball_image, self.rect)
         # pygame.draw.rect(window, BLACK, self.rect, 2)
-        # pygame.draw.rect(self.window, RED, self.collisionRect, 2)
+        # pygame.draw.rect(self.window, self.RED, self.collisionRect, 2)
 
     def moveBall(self, dire):
         if dire == Direction.left:
