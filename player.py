@@ -11,7 +11,7 @@ class Player:
         self.window = window
         self.BALL_WIDTH = 55
         self.BALL_HEIGHT = 55
-        self.ball_image = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\snowball.png"),
+        self.ball_image = pygame.transform.scale(image.load(r"assets\images\snowball.png"),
                                                  (self.BALL_WIDTH, self.BALL_HEIGHT))
         self.PLAYER_SPEED = 5.5
         self.ball_image_origin = self.ball_image

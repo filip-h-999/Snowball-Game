@@ -1,5 +1,7 @@
 import pygame
-from pygame import image, font
+from pygame import image, font, mixer
+from pygame.mixer import Channel
+
 from player import Player
 from stone import Stone
 from snowBall import SnowBall
@@ -18,9 +20,9 @@ def main():
     BLACK = 0, 0, 0
     # RED = 255, 0, 0
 
-    start_screen = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\startscreen.png"), (742, 468))
-    game_over_screen = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\gameOver.png"), (742, 468))
-    back = pygame.transform.scale(image.load(r"C:\Users\filip\Downloads\back2.png"), (742, 468))
+    start_screen = pygame.transform.scale(image.load(r"assets\images\startscreen.png"), (742, 468))
+    game_over_screen = pygame.transform.scale(image.load(r"assets\images\gameOver.png"), (742, 468))
+    back = pygame.transform.scale(image.load(r"assets\images\back2.png"), (742, 468))
 
     running = True
 
@@ -50,6 +52,7 @@ def main():
                 snowB.remove(snow)
             if player.collisionRect.colliderect(snow.snowBallRect):
                 player.inflate(3 * snow.snSize)
+                snowSound()
                 snowB.remove(snow)
 
     def dead():
@@ -57,6 +60,7 @@ def main():
         for kamen in stones:
             if player.collisionRect.colliderect(kamen.stoneRect):
                 gameOver = True
+                deadSound()
                 stones.clear()
                 snowB.clear()
                 break
@@ -73,8 +77,25 @@ def main():
         score = 0
         stones.clear()
         snowB.clear()
+        music()
         pygame.time.set_timer(FALLING_EVENT, 1000, 1)
         return Player(window)
+
+    def music():
+        backgroundMusic = r"assets\sounds\backMusik.mp3"
+        mixer.music.load(backgroundMusic)
+        mixer.music.set_volume(0.2)
+        mixer.music.play()
+
+    def snowSound():
+        snowS = r"assets\sounds\snowSound.mp3"
+        pygame.mixer.Channel(0).play(pygame.mixer.Sound(snowS), maxtime=500)
+        Channel(0).set_volume(0.5)
+
+    def deadSound():
+        deadS = r"assets\sounds\deadSound.mp3"
+        pygame.mixer.Channel(0).play(pygame.mixer.Sound(deadS), maxtime=500)
+        Channel(0).set_volume(0.5)
 
     while running:
         global gameOver, gameStarted, score
@@ -94,6 +115,7 @@ def main():
                 if event.key == pygame.K_p:
                     pygame.time.set_timer(FALLING_EVENT, 1000, 1)
                     gameStarted = True
+                    music()
                 if event.key == pygame.K_n and gameOver:
                     running = False
                 if event.key == pygame.K_c and gameOver:
@@ -125,6 +147,7 @@ def main():
             font2 = font.SysFont('didot.ttc', 45)
             gameScore2 = font2.render("Score: %d" % score, True, BLACK)
             window.blit(gameScore2, (310, 332))
+            pygame.mixer.music.pause()
 
         if player.isDead():
             gameOver = True

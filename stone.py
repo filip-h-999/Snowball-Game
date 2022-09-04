@@ -8,7 +8,7 @@ BLACK = 0, 0, 0
 class Stone:
     STONE_WIDTH = 30
     STONE_HEIGHT = 30
-    stone_image = image.load(r"C:\Users\filip\Downloads\stone-pixel-art.png")
+    stone_image = image.load(r"assets\images\stone-pixel-art.png")
     st1 = pygame.transform.scale(stone_image, (STONE_WIDTH, STONE_HEIGHT))
     st2 = pygame.transform.scale(stone_image, (25, 25))
     st3 = pygame.transform.scale(stone_image, (33, 33))

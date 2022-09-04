@@ -8,7 +8,7 @@ BLACK = 0, 0, 0
 class SnowBall:
     SNOWBALL_WIDTH = 20
     SNOWBALL_HEIGHT = 20
-    snowball_image = image.load(r"C:\Users\filip\Downloads\snowball.png")
+    snowball_image = image.load(r"assets\images\snowball.png")
     sn1 = pygame.transform.scale(snowball_image, (SNOWBALL_WIDTH, SNOWBALL_HEIGHT))
     sn2 = pygame.transform.scale(snowball_image, (25, 25))
     sn3 = pygame.transform.scale(snowball_image, (33, 33))
