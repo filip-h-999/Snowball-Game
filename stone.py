@@ -30,4 +30,4 @@ class Stone:
     def drawStone(self):
         self.window.blit(self.randomSt, (self.stonePositionX, self.stonePositionY))
         self.stoneFalling()
-        pygame.draw.rect(self.window, BLACK, self.stoneRect, 1)
+        # pygame.draw.rect(self.window, BLACK, self.stoneRect, 1)

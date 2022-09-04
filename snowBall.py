@@ -30,4 +30,4 @@ class SnowBall:
     def drawSnowBall(self):
         self.window.blit(self.randomSn, (self.snowballPositionX, self.snowballPositionY))
         self.snowFalling()
-        pygame.draw.rect(self.window, BLACK, self.snowBallRect, 1)
+        # pygame.draw.rect(self.window, BLACK, self.snowBallRect, 1)
